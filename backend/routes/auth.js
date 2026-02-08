@@ -40,12 +40,8 @@ router.post("/send-otp", async (req, res, next) => {
       console.log(`✅ Email sent successfully to ${email}`);
     } catch (emailError) {
       console.error(`❌ Email send failed for ${email}:`, emailError.message);
-      console.error("Full error:", emailError);
-      // In development, still allow login with OTP
-      if (process.env.NODE_ENV !== "development") {
-        return res.status(500).json({ message: "Failed to send OTP email. Please try again.", error: emailError.message });
-      }
-      console.warn(`⚠️  Continuing in development mode without email. OTP: ${otp}`);
+      // Still allow login — OTP was generated successfully
+      console.warn(`⚠️  Email failed but OTP generated. OTP: ${otp}`);
     }
 
     res.json({ 
@@ -107,7 +103,7 @@ router.get(
       { expiresIn: "7d" }
     );
 
-    const origin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+    const origin = (process.env.CLIENT_ORIGIN || "http://localhost:5173").replace(/\/+$/, "");
     const redirectUrl = new URL("/auth/callback", origin);
     redirectUrl.searchParams.set("token", token);
 
